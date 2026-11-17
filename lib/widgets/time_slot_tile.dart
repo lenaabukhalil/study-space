@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class TimeSlotTile extends StatelessWidget {
   final int hour;
   final bool isSelected;
+  final bool isInRange;
   final bool isPast;
   final bool isBooked;
   final bool isUnavailable;
@@ -12,6 +13,7 @@ class TimeSlotTile extends StatelessWidget {
     super.key,
     required this.hour,
     required this.isSelected,
+    required this.isInRange,
     required this.isPast,
     required this.isBooked,
     required this.isUnavailable,
@@ -36,27 +38,35 @@ class TimeSlotTile extends StatelessWidget {
   }
 
   Color _backgroundColor(ColorScheme scheme) {
-    if (isBooked) {
-      return Colors.red.shade100;
-    }
-    if (isPast || isUnavailable) {
-      return Colors.grey.shade200;
-    }
     if (isSelected) {
       return scheme.primary;
+    }
+    if (isInRange) {
+      return Color.alphaBlend(
+        scheme.primary.withValues(alpha: 0.35),
+        scheme.surface,
+      );
+    }
+    if (isBooked) {
+      return scheme.errorContainer;
+    }
+    if (isPast || isUnavailable) {
+      return scheme.surfaceContainerHighest;
     }
     return scheme.primaryContainer.withValues(alpha: 0.5);
   }
 
-  Color _textColor(ColorScheme scheme) {
+  Color _textColor(ColorScheme scheme, Color background) {
+    if (isSelected || isInRange) {
+      final isDark =
+          ThemeData.estimateBrightnessForColor(background) == Brightness.dark;
+      return isDark ? scheme.onPrimary : scheme.onPrimaryContainer;
+    }
     if (isBooked) {
-      return Colors.red.shade700;
+      return scheme.onErrorContainer;
     }
     if (isPast || isUnavailable) {
-      return Colors.grey.shade500;
-    }
-    if (isSelected) {
-      return scheme.onPrimary;
+      return scheme.onSurface.withValues(alpha: 0.38);
     }
     return scheme.onPrimaryContainer;
   }
@@ -64,11 +74,12 @@ class TimeSlotTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final textColor = _textColor(scheme);
+    final background = _backgroundColor(scheme);
+    final textColor = _textColor(scheme, background);
     final caption = _caption;
 
     return Material(
-      color: _backgroundColor(scheme),
+      color: background,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         borderRadius: BorderRadius.circular(10),

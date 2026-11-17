@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/rooms_provider.dart';
+import '../widgets/error_state.dart';
 import '../widgets/greeting_header.dart';
 import '../widgets/room_card.dart';
 
@@ -26,8 +27,6 @@ class RoomsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rooms = context.watch<RoomsProvider>().filteredRooms;
-
     return Scaffold(
       body: SafeArea(
         child: LayoutBuilder(
@@ -54,16 +53,10 @@ class RoomsScreen extends StatelessWidget {
                 ),
                 SliverPadding(
                   padding: padding.copyWith(bottom: 24),
-                  sliver: SliverGrid.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: _columnsFor(contentWidth),
-                      mainAxisExtent: _cardHeight,
-                      mainAxisSpacing: _gutter,
-                      crossAxisSpacing: _gutter,
-                    ),
-                    itemCount: rooms.length,
-                    itemBuilder: (context, index) =>
-                        RoomCard(room: rooms[index]),
+                  sliver: _RoomsSliver(
+                    columns: _columnsFor(contentWidth),
+                    cardHeight: _cardHeight,
+                    gutter: _gutter,
                   ),
                 ),
               ],
@@ -71,6 +64,50 @@ class RoomsScreen extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+}
+
+class _RoomsSliver extends StatelessWidget {
+  final int columns;
+  final double cardHeight;
+  final double gutter;
+
+  const _RoomsSliver({
+    required this.columns,
+    required this.cardHeight,
+    required this.gutter,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<RoomsProvider>();
+    final error = provider.errorMessage;
+
+    if (provider.isLoading) {
+      return const SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (error != null) {
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: ErrorState(message: error, onRetry: provider.retry),
+      );
+    }
+
+    final rooms = provider.filteredRooms;
+    return SliverGrid.builder(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: columns,
+        mainAxisExtent: cardHeight,
+        mainAxisSpacing: gutter,
+        crossAxisSpacing: gutter,
+      ),
+      itemCount: rooms.length,
+      itemBuilder: (context, index) => RoomCard(room: rooms[index]),
     );
   }
 }

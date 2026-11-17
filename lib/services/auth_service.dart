@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'firestore_service.dart';
+
 class AuthException implements Exception {
   final String message;
   final bool isCredentialError;
@@ -12,8 +14,11 @@ class AuthException implements Exception {
 
 class AuthService {
   final FirebaseAuth _auth;
+  final FirestoreService _firestore;
 
-  AuthService({FirebaseAuth? auth}) : _auth = auth ?? FirebaseAuth.instance;
+  AuthService({FirebaseAuth? auth, FirestoreService? firestore})
+    : _auth = auth ?? FirebaseAuth.instance,
+      _firestore = firestore ?? FirestoreService();
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
@@ -32,6 +37,11 @@ class AuthService {
       final user = credential.user;
       if (user != null) {
         await user.updateDisplayName(name.trim());
+        await _firestore.createUserProfile(
+          uid: user.uid,
+          name: name.trim(),
+          email: email.trim(),
+        );
         await user.reload();
       }
       return _auth.currentUser;

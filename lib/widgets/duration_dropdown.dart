@@ -20,7 +20,7 @@ class DurationDropdown extends StatelessWidget {
       initialValue: value,
       decoration: const InputDecoration(
         labelText: 'Duration',
-        prefixIcon: Icon(Icons.timelapse),
+        prefixIcon: Icon(Icons.hourglass_bottom),
       ),
       items: options
           .map(

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class LoadingButton extends StatelessWidget {
   final String label;
   final bool isLoading;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   const LoadingButton({
     super.key,

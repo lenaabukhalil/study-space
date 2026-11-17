@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'payment_method.dart';
 
 class Booking {
@@ -21,14 +23,15 @@ class Booking {
 
   int get durationHours => end.difference(start).inHours;
 
-  factory Booking.fromMap(Map<String, dynamic> map) {
+  factory Booking.fromMap(String id, Map<String, dynamic> map) {
+    final start = (map['start'] as Timestamp).toDate();
     return Booking(
-      id: map['id'] as String,
+      id: id,
       roomId: map['roomId'] as String,
       userId: map['userId'] as String,
-      start: DateTime.parse(map['start'] as String),
-      end: DateTime.parse(map['end'] as String),
-      createdAt: DateTime.parse(map['createdAt'] as String),
+      start: start,
+      end: (map['end'] as Timestamp).toDate(),
+      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? start,
       paymentMethod:
           map['paymentMethod'] as String? ?? PaymentMethods.frontDesk,
     );
@@ -36,12 +39,11 @@ class Booking {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'roomId': roomId,
       'userId': userId,
-      'start': start.toIso8601String(),
-      'end': end.toIso8601String(),
-      'createdAt': createdAt.toIso8601String(),
+      'start': Timestamp.fromDate(start),
+      'end': Timestamp.fromDate(end),
+      'createdAt': FieldValue.serverTimestamp(),
       'paymentMethod': paymentMethod,
     };
   }

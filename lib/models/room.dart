@@ -19,21 +19,20 @@ class Room {
 
   bool get isDesk => type == 'desk';
 
-  factory Room.fromMap(Map<String, dynamic> map) {
+  factory Room.fromMap(String id, Map<String, dynamic> map) {
     return Room(
-      id: map['id'] as String,
-      name: map['name'] as String,
-      type: map['type'] as String,
-      capacity: map['capacity'] as int,
-      pricePerHour: (map['pricePerHour'] as num).toDouble(),
+      id: id,
+      name: map['name'] as String? ?? '',
+      type: map['type'] as String? ?? 'room',
+      capacity: (map['capacity'] as num?)?.toInt() ?? 1,
+      pricePerHour: (map['pricePerHour'] as num?)?.toDouble() ?? 0,
       amenities: List<String>.from(map['amenities'] as List? ?? const []),
-      imagePath: map['imagePath'] as String,
+      imagePath: map['imagePath'] as String? ?? '',
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'name': name,
       'type': type,
       'capacity': capacity,

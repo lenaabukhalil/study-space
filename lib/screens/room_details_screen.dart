@@ -9,8 +9,12 @@ import '../widgets/booking_policy_dialog.dart';
 import '../widgets/booking_success_dialog.dart';
 import '../widgets/date_selector.dart';
 import '../widgets/duration_dropdown.dart';
+import '../widgets/error_state.dart';
+import '../widgets/loading_button.dart';
+import '../widgets/no_slots_notice.dart';
 import '../widgets/room_image.dart';
 import '../widgets/room_info_header.dart';
+import '../widgets/selection_summary.dart';
 import '../widgets/time_slot_grid.dart';
 
 class RoomDetailsScreen extends StatefulWidget {
@@ -23,6 +27,7 @@ class RoomDetailsScreen extends StatefulWidget {
 }
 
 class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
+  late final BookingProvider _bookings;
   late DateTime _selectedDate;
   int? _selectedHour;
   int _duration = 1;
@@ -31,6 +36,14 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
   void initState() {
     super.initState();
     _selectedDate = _today();
+    _bookings = context.read<BookingProvider>();
+    _bookings.watchRoomDay(widget.room.id, _selectedDate);
+  }
+
+  @override
+  void dispose() {
+    _bookings.stopWatchingRoomDay();
+    super.dispose();
   }
 
   DateTime _today() {
@@ -55,10 +68,6 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     return true;
   }
 
-  Set<int> _bookedHours(BookingProvider provider) {
-    return provider.bookedHoursForRoomOnDate(widget.room.id, _selectedDate);
-  }
-
   Future<void> _pickDate() async {
     final today = _today();
     final picked = await showDatePicker(
@@ -67,7 +76,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
       firstDate: today,
       lastDate: today.add(const Duration(days: 14)),
     );
-    if (picked != null) {
+    if (picked != null && picked != _selectedDate) {
+      _bookings.watchRoomDay(widget.room.id, picked);
       setState(() {
         _selectedDate = picked;
         _selectedHour = null;
@@ -76,7 +86,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
   }
 
   void _changeDuration(int duration) {
-    final booked = _bookedHours(context.read<BookingProvider>());
+    final booked = _bookings.bookedHours;
     setState(() {
       _duration = duration;
       final selected = _selectedHour;
@@ -107,18 +117,21 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
       return;
     }
 
-    final result = context.read<BookingProvider>().addBooking(
+    final result = await _bookings.addBooking(
       roomId: room.id,
       start: start,
       end: end,
       paymentMethod: paymentMethod,
     );
+    if (!mounted) {
+      return;
+    }
 
     if (!result.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result.errorMessage!),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;
@@ -140,7 +153,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final room = widget.room;
-    final bookedHours = _bookedHours(context.watch<BookingProvider>());
+    final provider = context.watch<BookingProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -172,15 +185,18 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                       value: _duration,
                       onChanged: _changeDuration,
                     ),
+                    if (_selectedHour != null) ...[
+                      const SizedBox(height: 12),
+                      SelectionSummary(
+                        start: _selectedDate.add(
+                          Duration(hours: _selectedHour!),
+                        ),
+                        duration: _duration,
+                        pricePerHour: room.pricePerHour,
+                      ),
+                    ],
                     const SizedBox(height: 16),
-                    TimeSlotGrid(
-                      hours: OpeningHours.forDate(_selectedDate).slotHours,
-                      selectedHour: _selectedHour,
-                      isPast: _isPast,
-                      isBooked: bookedHours.contains,
-                      fitsDuration: (hour) => _fits(hour, bookedHours),
-                      onSelect: _toggleSlot,
-                    ),
+                    _buildSlots(provider),
                   ],
                 ),
               ),
@@ -191,15 +207,49 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: FilledButton(
+          child: LoadingButton(
+            label: 'Book',
+            isLoading: provider.isSubmitting,
             onPressed: _selectedHour == null ? null : _book,
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-            ),
-            child: const Text('Book'),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSlots(BookingProvider provider) {
+    final error = provider.roomDayError;
+    if (provider.isLoadingRoomDay) {
+      return const Padding(
+        padding: EdgeInsets.all(32),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (error != null) {
+      return ErrorState(message: error, onRetry: provider.retryRoomDay);
+    }
+    final bookedHours = provider.bookedHours;
+    final hours = OpeningHours.forDate(_selectedDate).slotHours;
+    final hasAvailable = hours.any(
+      (hour) => !_isPast(hour) && _fits(hour, bookedHours),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!hasAvailable) ...[
+          NoSlotsNotice(onPickDate: _pickDate),
+          const SizedBox(height: 12),
+        ],
+        TimeSlotGrid(
+          hours: hours,
+          selectedHour: _selectedHour,
+          duration: _duration,
+          isPast: _isPast,
+          isBooked: bookedHours.contains,
+          fitsDuration: (hour) => _fits(hour, bookedHours),
+          onSelect: _toggleSlot,
+        ),
+      ],
     );
   }
 }

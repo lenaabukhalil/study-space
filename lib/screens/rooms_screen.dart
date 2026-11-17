@@ -1,23 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../data/sample_rooms.dart';
+import '../providers/rooms_provider.dart';
 import '../widgets/room_card.dart';
 
-class RoomsScreen extends StatefulWidget {
+class RoomsScreen extends StatelessWidget {
   const RoomsScreen({super.key});
 
   @override
-  State<RoomsScreen> createState() => _RoomsScreenState();
-}
-
-class _RoomsScreenState extends State<RoomsScreen> {
-  String _filter = 'all';
-
-  @override
   Widget build(BuildContext context) {
-    final rooms = _filter == 'all'
-        ? sampleRooms
-        : sampleRooms.where((room) => room.type == _filter).toList();
+    final roomsProvider = context.watch<RoomsProvider>();
+    final rooms = roomsProvider.filteredRooms;
 
     return Scaffold(
       appBar: AppBar(
@@ -31,9 +24,9 @@ class _RoomsScreenState extends State<RoomsScreen> {
             child: Wrap(
               spacing: 8,
               children: [
-                _buildChip('All', 'all'),
-                _buildChip('Rooms', 'room'),
-                _buildChip('Desks', 'desk'),
+                _buildChip(context, roomsProvider.filter, 'All', 'all'),
+                _buildChip(context, roomsProvider.filter, 'Rooms', 'room'),
+                _buildChip(context, roomsProvider.filter, 'Desks', 'desk'),
               ],
             ),
           ),
@@ -48,16 +41,17 @@ class _RoomsScreenState extends State<RoomsScreen> {
     );
   }
 
-  Widget _buildChip(String label, String value) {
+  Widget _buildChip(
+    BuildContext context,
+    String currentFilter,
+    String label,
+    String value,
+  ) {
     return ChoiceChip(
       label: Text(label),
-      selected: _filter == value,
+      selected: currentFilter == value,
       selectedColor: Colors.blue.shade200,
-      onSelected: (_) {
-        setState(() {
-          _filter = value;
-        });
-      },
+      onSelected: (_) => context.read<RoomsProvider>().setFilter(value),
     );
   }
 }

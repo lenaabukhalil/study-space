@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../models/room.dart';
+import '../providers/booking_provider.dart';
 import '../widgets/room_image.dart';
 import '../widgets/time_slot_tile.dart';
 
@@ -59,16 +61,44 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
   }
 
   void _book() {
-    final date = DateFormat('EEE, d MMM yyyy').format(_selectedDate);
-    final time = TimeSlotTile.label(_selectedHour!);
+    final hour = _selectedHour!;
+    final start = _selectedDate.add(Duration(hours: hour));
+    final end = start.add(const Duration(hours: 1));
+
+    final result = context.read<BookingProvider>().addBooking(
+          roomId: widget.room.id,
+          start: start,
+          end: end,
+        );
+
+    final String message;
+    if (result.success) {
+      final date = DateFormat('EEE, d MMM yyyy').format(_selectedDate);
+      message =
+          'Booked ${widget.room.name} • $date • ${TimeSlotTile.label(hour)}';
+      setState(() {
+        _selectedHour = null;
+      });
+    } else {
+      message = result.errorMessage!;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${widget.room.name} • $date • $time')),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: result.success ? Colors.green : Colors.red,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final room = widget.room;
+    final bookedHours = context
+        .watch<BookingProvider>()
+        .bookingsForRoomOnDate(room.id, _selectedDate)
+        .map((booking) => booking.start.hour)
+        .toSet();
 
     return Scaffold(
       appBar: AppBar(
@@ -87,7 +117,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                 const SizedBox(height: 24),
                 _buildDateSelector(),
                 const SizedBox(height: 16),
-                _buildSlotGrid(),
+                _buildSlotGrid(bookedHours),
               ],
             ),
           ),
@@ -165,7 +195,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     );
   }
 
-  Widget _buildSlotGrid() {
+  Widget _buildSlotGrid(Set<int> bookedHours) {
     final hours = List.generate(
       _lastHour - _firstHour,
       (index) => _firstHour + index,
@@ -183,7 +213,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
             (hour) => TimeSlotTile(
               hour: hour,
               isSelected: _selectedHour == hour,
-              isDisabled: _isPast(hour),
+              isPast: _isPast(hour),
+              isBooked: bookedHours.contains(hour),
               onTap: () => _toggleSlot(hour),
             ),
           )

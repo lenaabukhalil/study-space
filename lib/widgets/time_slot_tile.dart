@@ -3,14 +3,16 @@ import 'package:flutter/material.dart';
 class TimeSlotTile extends StatelessWidget {
   final int hour;
   final bool isSelected;
-  final bool isDisabled;
+  final bool isPast;
+  final bool isBooked;
   final VoidCallback onTap;
 
   const TimeSlotTile({
     super.key,
     required this.hour,
     required this.isSelected,
-    required this.isDisabled,
+    required this.isPast,
+    required this.isBooked,
     required this.onTap,
   });
 
@@ -19,8 +21,13 @@ class TimeSlotTile extends StatelessWidget {
     return '${format(hour)} - ${format(hour + 1)}';
   }
 
+  bool get _isDisabled => isPast || isBooked;
+
   Color get _backgroundColor {
-    if (isDisabled) {
+    if (isBooked) {
+      return Colors.red.shade100;
+    }
+    if (isPast) {
       return Colors.grey.shade300;
     }
     if (isSelected) {
@@ -30,7 +37,10 @@ class TimeSlotTile extends StatelessWidget {
   }
 
   Color get _textColor {
-    if (isDisabled) {
+    if (isBooked) {
+      return Colors.red.shade700;
+    }
+    if (isPast) {
       return Colors.grey.shade600;
     }
     if (isSelected) {
@@ -46,16 +56,24 @@ class TimeSlotTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
-        onTap: isDisabled ? null : onTap,
-        child: Center(
-          child: Text(
-            label(hour),
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: _textColor,
+        onTap: _isDisabled ? null : onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label(hour),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: _textColor,
+              ),
             ),
-          ),
+            if (isBooked)
+              Text(
+                'Booked',
+                style: TextStyle(fontSize: 11, color: _textColor),
+              ),
+          ],
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'my_bookings_screen.dart';
+import 'profile_screen.dart';
 import 'rooms_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static const List<Widget> _screens = [
     RoomsScreen(),
     MyBookingsScreen(),
+    ProfileScreen(),
   ];
 
   @override
@@ -38,6 +40,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.event_note),
             label: 'My Bookings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
       ),

@@ -40,9 +40,7 @@ class MyBookingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bookings = context
-        .watch<BookingProvider>()
-        .bookingsForUser(BookingProvider.currentUserId);
+    final bookings = context.watch<BookingProvider>().myBookings;
     final roomsProvider = context.watch<RoomsProvider>();
 
     return Scaffold(

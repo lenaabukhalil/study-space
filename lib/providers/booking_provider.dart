@@ -4,18 +4,43 @@ import '../models/booking.dart';
 import '../models/booking_result.dart';
 
 class BookingProvider extends ChangeNotifier {
-  static const String currentUserId = 'demo-user';
   static const int maxBookingsPerDay = 2;
 
   final List<Booking> _bookings = [];
+  String? _currentUserId;
+
+  String? get currentUserId => _currentUserId;
 
   List<Booking> get bookings => List.unmodifiable(_bookings);
+
+  List<Booking> get myBookings {
+    final userId = _currentUserId;
+    if (userId == null) {
+      return const [];
+    }
+    return bookingsForUser(userId);
+  }
+
+  void updateUser(String? userId) {
+    if (_currentUserId == userId) {
+      return;
+    }
+    _currentUserId = userId;
+    if (userId == null) {
+      _bookings.clear();
+    }
+  }
 
   BookingResult addBooking({
     required String roomId,
     required DateTime start,
     required DateTime end,
   }) {
+    final userId = _currentUserId;
+    if (userId == null) {
+      return const BookingResult.failure('Please sign in to book.');
+    }
+
     if (start.isBefore(DateTime.now())) {
       return const BookingResult.failure('You cannot book a time in the past.');
     }
@@ -33,8 +58,7 @@ class BookingProvider extends ChangeNotifier {
     final userBookingsThatDay = _bookings
         .where(
           (booking) =>
-              booking.userId == currentUserId &&
-              _isSameDay(booking.start, start),
+              booking.userId == userId && _isSameDay(booking.start, start),
         )
         .length;
     if (userBookingsThatDay >= maxBookingsPerDay) {
@@ -48,7 +72,7 @@ class BookingProvider extends ChangeNotifier {
       Booking(
         id: now.microsecondsSinceEpoch.toString(),
         roomId: roomId,
-        userId: currentUserId,
+        userId: userId,
         start: start,
         end: end,
         createdAt: now,

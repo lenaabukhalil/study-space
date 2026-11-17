@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
 import '../utils/validators.dart';
+import '../widgets/brand_header.dart';
+import '../widgets/floral_background.dart';
 import '../widgets/loading_button.dart';
 import '../widgets/password_field.dart';
 
@@ -65,69 +67,65 @@ class _LoginScreenState extends State<LoginScreen> {
     final isLoading = context.select<AuthProvider, bool>((a) => a.isLoading);
 
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Icon(Icons.school, size: 72, color: Colors.blue.shade700),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Welcome back',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Sign in to book your study space',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey.shade600),
-                  ),
-                  const SizedBox(height: 32),
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    autocorrect: false,
-                    validator: Validators.email,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  PasswordField(
-                    controller: _passwordController,
-                    validator: Validators.password,
-                    onFieldSubmitted: (_) {
-                      if (!isLoading) {
-                        _submit();
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  LoadingButton(
-                    label: 'Sign In',
-                    isLoading: isLoading,
-                    onPressed: _submit,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+      body: FloralBackground(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text("Don't have an account?"),
-                      TextButton(
-                        onPressed: isLoading ? null : widget.onSwitchToSignUp,
-                        child: const Text('Sign Up'),
+                      const BrandHeader(
+                        title: 'Welcome back',
+                        subtitle: 'Sign in to book your space',
+                      ),
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        autocorrect: false,
+                        validator: Validators.email,
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          prefixIcon: Icon(Icons.email),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      PasswordField(
+                        controller: _passwordController,
+                        validator: Validators.password,
+                        onFieldSubmitted: (_) {
+                          if (!isLoading) {
+                            _submit();
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      LoadingButton(
+                        label: 'Sign In',
+                        isLoading: isLoading,
+                        onPressed: _submit,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text("Don't have an account?"),
+                          TextButton(
+                            onPressed: isLoading
+                                ? null
+                                : widget.onSwitchToSignUp,
+                            child: const Text('Sign Up'),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

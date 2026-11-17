@@ -16,7 +16,7 @@ class AuthProvider extends ChangeNotifier {
   bool _isCredentialError = false;
 
   AuthProvider({AuthService? authService})
-      : _authService = authService ?? AuthService() {
+    : _authService = authService ?? AuthService() {
     _user = _authService.currentUser;
     _subscription = _authService.authStateChanges.listen(_onAuthStateChanged);
   }

@@ -1,45 +1,75 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../models/booking.dart';
+import '../utils/formatters.dart';
+import 'cancel_locked_hint.dart';
 
 class BookingTile extends StatelessWidget {
   final Booking booking;
   final String roomName;
+  final bool canCancel;
   final VoidCallback onCancel;
 
   const BookingTile({
     super.key,
     required this.booking,
     required this.roomName,
+    required this.canCancel,
     required this.onCancel,
   });
 
   @override
   Widget build(BuildContext context) {
-    final date = DateFormat('EEE, d MMM yyyy').format(booking.start);
-    final timeFormat = DateFormat('HH:mm');
-    final time =
-        '${timeFormat.format(booking.start)} - ${timeFormat.format(booking.end)}';
+    final scheme = Theme.of(context).colorScheme;
+    final muted = TextStyle(color: Colors.grey.shade700);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: ListTile(
+        contentPadding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
         leading: CircleAvatar(
-          backgroundColor: Colors.blue.shade100,
-          child: Icon(Icons.event, color: Colors.blue.shade700),
+          backgroundColor: scheme.secondaryContainer,
+          child: Icon(Icons.event, color: scheme.primary),
         ),
         title: Text(
           roomName,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text('$date\n$time'),
-        isThreeLine: true,
-        trailing: IconButton(
-          icon: Icon(Icons.cancel, color: Colors.red.shade400),
-          tooltip: 'Cancel booking',
-          onPressed: onCancel,
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(Formatters.date(booking.start), style: muted),
+            Text(
+              '${Formatters.timeRange(booking.start, booking.end)} (${Formatters.hours(booking.durationHours)})',
+              style: muted,
+            ),
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Icon(
+                  Icons.account_balance_wallet,
+                  size: 14,
+                  color: scheme.primary,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    booking.paymentMethod,
+                    style: TextStyle(fontSize: 12, color: scheme.primary),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
+        trailing: canCancel
+            ? IconButton(
+                icon: Icon(Icons.cancel, color: Colors.red.shade400),
+                tooltip: 'Cancel booking',
+                onPressed: onCancel,
+              )
+            : const CancelLockedHint(),
       ),
     );
   }

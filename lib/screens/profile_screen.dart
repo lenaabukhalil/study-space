@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
+import '../widgets/about_space_card.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -36,72 +37,76 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
     final name = user?.displayName?.trim();
-    final displayName = name == null || name.isEmpty ? 'StudySpace user' : name;
+    final displayName = name == null || name.isEmpty ? 'Yasmine member' : name;
     final email = user?.email ?? '';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: Colors.blue.shade100,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          CircleAvatar(
-            radius: 44,
-            backgroundColor: Colors.blue.shade100,
-            child: Text(
-              displayName[0].toUpperCase(),
-              style: TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue.shade700,
+      appBar: AppBar(title: const Text('Profile')),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              _ProfileHeader(name: displayName, email: email),
+              const SizedBox(height: 24),
+              const AboutSpaceCard(),
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: () => _confirmLogout(context),
+                icon: const Icon(Icons.logout),
+                label: const Text('Logout'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(48),
+                ),
               ),
-            ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            displayName,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            email,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
-          ),
-          const SizedBox(height: 32),
-          Card(
-            child: Column(
-              children: [
-                ListTile(
-                  leading: Icon(Icons.person, color: Colors.blue.shade700),
-                  title: const Text('Name'),
-                  subtitle: Text(displayName),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: Icon(Icons.email, color: Colors.blue.shade700),
-                  title: const Text('Email'),
-                  subtitle: Text(email),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: () => _confirmLogout(context),
-            icon: const Icon(Icons.logout),
-            label: const Text('Logout'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              minimumSize: const Size.fromHeight(48),
-            ),
-          ),
-        ],
+        ),
       ),
+    );
+  }
+}
+
+class _ProfileHeader extends StatelessWidget {
+  final String name;
+  final String email;
+
+  const _ProfileHeader({required this.name, required this.email});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: 44,
+          backgroundColor: scheme.primaryContainer,
+          child: Text(
+            name[0].toUpperCase(),
+            style: TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: scheme.primary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          name,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          email,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+        ),
+      ],
     );
   }
 }

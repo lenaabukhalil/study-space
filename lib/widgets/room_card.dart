@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../models/room.dart';
 import '../screens/room_details_screen.dart';
+import '../utils/formatters.dart';
+import 'amenity_chips.dart';
 import 'room_image.dart';
 
 class RoomCard extends StatelessWidget {
@@ -18,41 +20,67 @@ class RoomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRoom = room.type == 'room';
-
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => _openDetails(context),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            RoomImage(imageUrl: room.imageUrl),
-            ListTile(
-              contentPadding: const EdgeInsets.all(12),
-              leading: CircleAvatar(
-                backgroundColor:
-                    isRoom ? Colors.blue.shade100 : Colors.green.shade100,
-                child: Icon(
-                  isRoom ? Icons.meeting_room : Icons.desk,
-                  color: isRoom ? Colors.blue.shade700 : Colors.green.shade700,
-                ),
-              ),
-              title: Text(
-                room.name,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(
-                '${isRoom ? 'Room' : 'Desk'} • Capacity: ${room.capacity}',
-              ),
-              trailing: Icon(
-                room.hasProjector ? Icons.videocam : Icons.videocam_off,
-                color: room.hasProjector ? Colors.orange : Colors.grey.shade400,
-              ),
+            Expanded(child: RoomImage(imagePath: room.imagePath)),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: _RoomCardDetails(room: room),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _RoomCardDetails extends StatelessWidget {
+  final Room room;
+
+  const _RoomCardDetails({required this.room});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          room.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Icon(Icons.people, size: 16, color: Colors.grey.shade600),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                Formatters.capacity(room.capacity),
+                style: TextStyle(color: Colors.grey.shade700),
+              ),
+            ),
+            Text(
+              Formatters.pricePerHour(room.pricePerHour),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: scheme.primary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        AmenityChips(amenities: room.amenities, maxCount: 3),
+      ],
     );
   }
 }

@@ -32,22 +32,25 @@ class MyBookingsScreen extends StatelessWidget {
       return;
     }
 
-    context.read<BookingProvider>().cancelBooking(booking.id);
+    final result = context.read<BookingProvider>().cancelBooking(booking.id);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Booking cancelled')),
+      SnackBar(
+        content: Text(
+          result.success ? 'Booking cancelled' : result.errorMessage!,
+        ),
+        backgroundColor: result.success ? null : Colors.red,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final bookings = context.watch<BookingProvider>().myBookings;
+    final bookingProvider = context.watch<BookingProvider>();
+    final bookings = bookingProvider.myBookings;
     final roomsProvider = context.watch<RoomsProvider>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Bookings'),
-        backgroundColor: Colors.blue.shade100,
-      ),
+      appBar: AppBar(title: const Text('My Bookings')),
       body: bookings.isEmpty
           ? _buildEmptyState()
           : ListView.builder(
@@ -59,7 +62,8 @@ class MyBookingsScreen extends StatelessWidget {
                   booking: booking,
                   roomName:
                       roomsProvider.roomById(booking.roomId)?.name ??
-                          'Unknown room',
+                      'Unknown room',
+                  canCancel: bookingProvider.canCancel(booking),
                   onCancel: () => _confirmCancel(context, booking),
                 );
               },

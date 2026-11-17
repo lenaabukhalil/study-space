@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../config/space_info.dart';
 import '../providers/auth_provider.dart';
 import '../utils/validators.dart';
+import '../widgets/brand_header.dart';
+import '../widgets/floral_background.dart';
 import '../widgets/loading_button.dart';
 import '../widgets/password_field.dart';
 
@@ -71,82 +74,84 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final isLoading = context.select<AuthProvider, bool>((a) => a.isLoading);
 
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Icon(Icons.person_add, size: 72, color: Colors.blue.shade700),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Create account',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 32),
-                  TextFormField(
-                    controller: _nameController,
-                    textCapitalization: TextCapitalization.words,
-                    textInputAction: TextInputAction.next,
-                    validator: Validators.name,
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                      prefixIcon: Icon(Icons.person),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    autocorrect: false,
-                    validator: Validators.email,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  PasswordField(
-                    controller: _passwordController,
-                    validator: Validators.password,
-                    textInputAction: TextInputAction.next,
-                  ),
-                  const SizedBox(height: 16),
-                  PasswordField(
-                    controller: _confirmController,
-                    label: 'Confirm password',
-                    validator: _validateConfirm,
-                    onFieldSubmitted: (_) {
-                      if (!isLoading) {
-                        _submit();
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  LoadingButton(
-                    label: 'Sign Up',
-                    isLoading: isLoading,
-                    onPressed: _submit,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+      body: FloralBackground(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text('Already have an account?'),
-                      TextButton(
-                        onPressed: isLoading ? null : widget.onSwitchToLogin,
-                        child: const Text('Sign In'),
+                      BrandHeader(
+                        title: 'Create your account',
+                        subtitle:
+                            'Join the Yasmine community in ${SpaceInfo.neighborhood}',
+                      ),
+                      TextFormField(
+                        controller: _nameController,
+                        textCapitalization: TextCapitalization.words,
+                        textInputAction: TextInputAction.next,
+                        validator: Validators.name,
+                        decoration: const InputDecoration(
+                          labelText: 'Name',
+                          prefixIcon: Icon(Icons.person),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        autocorrect: false,
+                        validator: Validators.email,
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          prefixIcon: Icon(Icons.email),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      PasswordField(
+                        controller: _passwordController,
+                        validator: Validators.password,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: 16),
+                      PasswordField(
+                        controller: _confirmController,
+                        label: 'Confirm password',
+                        validator: _validateConfirm,
+                        onFieldSubmitted: (_) {
+                          if (!isLoading) {
+                            _submit();
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      LoadingButton(
+                        label: 'Sign Up',
+                        isLoading: isLoading,
+                        onPressed: _submit,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('Already have an account?'),
+                          TextButton(
+                            onPressed: isLoading
+                                ? null
+                                : widget.onSwitchToLogin,
+                            child: const Text('Sign In'),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

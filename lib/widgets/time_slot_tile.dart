@@ -5,6 +5,7 @@ class TimeSlotTile extends StatelessWidget {
   final bool isSelected;
   final bool isPast;
   final bool isBooked;
+  final bool isUnavailable;
   final VoidCallback onTap;
 
   const TimeSlotTile({
@@ -13,6 +14,7 @@ class TimeSlotTile extends StatelessWidget {
     required this.isSelected,
     required this.isPast,
     required this.isBooked,
+    required this.isUnavailable,
     required this.onTap,
   });
 
@@ -21,41 +23,55 @@ class TimeSlotTile extends StatelessWidget {
     return '${format(hour)} - ${format(hour + 1)}';
   }
 
-  bool get _isDisabled => isPast || isBooked;
+  bool get _isDisabled => isPast || isBooked || isUnavailable;
 
-  Color get _backgroundColor {
+  String? get _caption {
+    if (isBooked) {
+      return 'Booked';
+    }
+    if (isUnavailable && !isPast) {
+      return 'Too long';
+    }
+    return null;
+  }
+
+  Color _backgroundColor(ColorScheme scheme) {
     if (isBooked) {
       return Colors.red.shade100;
     }
-    if (isPast) {
-      return Colors.grey.shade300;
+    if (isPast || isUnavailable) {
+      return Colors.grey.shade200;
     }
     if (isSelected) {
-      return Colors.blue;
+      return scheme.primary;
     }
-    return Colors.blue.shade50;
+    return scheme.primaryContainer.withValues(alpha: 0.5);
   }
 
-  Color get _textColor {
+  Color _textColor(ColorScheme scheme) {
     if (isBooked) {
       return Colors.red.shade700;
     }
-    if (isPast) {
-      return Colors.grey.shade600;
+    if (isPast || isUnavailable) {
+      return Colors.grey.shade500;
     }
     if (isSelected) {
-      return Colors.white;
+      return scheme.onPrimary;
     }
-    return Colors.blue.shade900;
+    return scheme.onPrimaryContainer;
   }
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textColor = _textColor(scheme);
+    final caption = _caption;
+
     return Material(
-      color: _backgroundColor,
-      borderRadius: BorderRadius.circular(8),
+      color: _backgroundColor(scheme),
+      borderRadius: BorderRadius.circular(10),
       child: InkWell(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         onTap: _isDisabled ? null : onTap,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -65,14 +81,11 @@ class TimeSlotTile extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: _textColor,
+                color: textColor,
               ),
             ),
-            if (isBooked)
-              Text(
-                'Booked',
-                style: TextStyle(fontSize: 11, color: _textColor),
-              ),
+            if (caption != null)
+              Text(caption, style: TextStyle(fontSize: 11, color: textColor)),
           ],
         ),
       ),

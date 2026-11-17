@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        selectedItemColor: Colors.blue.shade700,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
@@ -41,10 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.event_note),
             label: 'My Bookings',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );

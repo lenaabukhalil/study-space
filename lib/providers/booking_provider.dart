@@ -2,9 +2,11 @@ import 'package:flutter/foundation.dart';
 
 import '../models/booking.dart';
 import '../models/booking_result.dart';
+import '../utils/formatters.dart';
 
 class BookingProvider extends ChangeNotifier {
   static const int maxBookingsPerDay = 2;
+  static const Duration cancellationNotice = Duration(hours: 1);
 
   final List<Booking> _bookings = [];
   String? _currentUserId;
@@ -35,10 +37,15 @@ class BookingProvider extends ChangeNotifier {
     required String roomId,
     required DateTime start,
     required DateTime end,
+    required String paymentMethod,
   }) {
     final userId = _currentUserId;
     if (userId == null) {
       return const BookingResult.failure('Please sign in to book.');
+    }
+
+    if (!end.isAfter(start)) {
+      return const BookingResult.failure('Please choose a valid duration.');
     }
 
     if (start.isBefore(DateTime.now())) {
@@ -76,15 +83,32 @@ class BookingProvider extends ChangeNotifier {
         start: start,
         end: end,
         createdAt: now,
+        paymentMethod: paymentMethod,
       ),
     );
     notifyListeners();
     return const BookingResult.success();
   }
 
-  void cancelBooking(String id) {
-    _bookings.removeWhere((booking) => booking.id == id);
+  bool canCancel(Booking booking) {
+    final deadline = booking.start.subtract(cancellationNotice);
+    return DateTime.now().isBefore(deadline);
+  }
+
+  BookingResult cancelBooking(String id) {
+    final booking = _bookings.where((b) => b.id == id).firstOrNull;
+    if (booking == null) {
+      return const BookingResult.failure('This booking no longer exists.');
+    }
+    if (!canCancel(booking)) {
+      return BookingResult.failure(
+        'Bookings can only be cancelled up to '
+        '${Formatters.hours(cancellationNotice.inHours)} before the start time.',
+      );
+    }
+    _bookings.remove(booking);
     notifyListeners();
+    return const BookingResult.success();
   }
 
   List<Booking> bookingsForRoomOnDate(String roomId, DateTime date) {
@@ -94,6 +118,14 @@ class BookingProvider extends ChangeNotifier {
               booking.roomId == roomId && _isSameDay(booking.start, date),
         )
         .toList();
+  }
+
+  Set<int> bookedHoursForRoomOnDate(String roomId, DateTime date) {
+    return {
+      for (final booking in bookingsForRoomOnDate(roomId, date))
+        for (var hour = booking.start.hour; hour < booking.end.hour; hour++)
+          hour,
+    };
   }
 
   List<Booking> bookingsForUser(String userId) {

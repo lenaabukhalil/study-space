@@ -3,17 +3,21 @@ class Room {
   final String name;
   final String type;
   final int capacity;
-  final bool hasProjector;
-  final String imageUrl;
+  final double pricePerHour;
+  final List<String> amenities;
+  final String imagePath;
 
   const Room({
     required this.id,
     required this.name,
     required this.type,
     required this.capacity,
-    required this.hasProjector,
-    required this.imageUrl,
+    required this.pricePerHour,
+    required this.amenities,
+    required this.imagePath,
   });
+
+  bool get isDesk => type == 'desk';
 
   factory Room.fromMap(Map<String, dynamic> map) {
     return Room(
@@ -21,8 +25,9 @@ class Room {
       name: map['name'] as String,
       type: map['type'] as String,
       capacity: map['capacity'] as int,
-      hasProjector: map['hasProjector'] as bool,
-      imageUrl: map['imageUrl'] as String,
+      pricePerHour: (map['pricePerHour'] as num).toDouble(),
+      amenities: List<String>.from(map['amenities'] as List? ?? const []),
+      imagePath: map['imagePath'] as String,
     );
   }
 
@@ -32,8 +37,9 @@ class Room {
       'name': name,
       'type': type,
       'capacity': capacity,
-      'hasProjector': hasProjector,
-      'imageUrl': imageUrl,
+      'pricePerHour': pricePerHour,
+      'amenities': amenities,
+      'imagePath': imagePath,
     };
   }
 }

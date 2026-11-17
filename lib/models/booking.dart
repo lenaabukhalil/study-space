@@ -1,3 +1,5 @@
+import 'payment_method.dart';
+
 class Booking {
   final String id;
   final String roomId;
@@ -5,6 +7,7 @@ class Booking {
   final DateTime start;
   final DateTime end;
   final DateTime createdAt;
+  final String paymentMethod;
 
   const Booking({
     required this.id,
@@ -13,7 +16,10 @@ class Booking {
     required this.start,
     required this.end,
     required this.createdAt,
+    required this.paymentMethod,
   });
+
+  int get durationHours => end.difference(start).inHours;
 
   factory Booking.fromMap(Map<String, dynamic> map) {
     return Booking(
@@ -23,6 +29,8 @@ class Booking {
       start: DateTime.parse(map['start'] as String),
       end: DateTime.parse(map['end'] as String),
       createdAt: DateTime.parse(map['createdAt'] as String),
+      paymentMethod:
+          map['paymentMethod'] as String? ?? PaymentMethods.frontDesk,
     );
   }
 
@@ -34,6 +42,7 @@ class Booking {
       'start': start.toIso8601String(),
       'end': end.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
+      'paymentMethod': paymentMethod,
     };
   }
 }

@@ -28,4 +28,27 @@ class Validators {
     }
     return null;
   }
+
+  static String? required(String? value, String label) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter $label';
+    }
+    return null;
+  }
+
+  static String? positiveInt(String? value) {
+    final number = int.tryParse(value?.trim() ?? '');
+    if (number == null || number < 1) {
+      return 'Please enter a whole number of at least 1';
+    }
+    return null;
+  }
+
+  static String? positiveNumber(String? value) {
+    final number = double.tryParse(value?.trim() ?? '');
+    if (number == null || number <= 0) {
+      return 'Please enter a number greater than 0';
+    }
+    return null;
+  }
 }

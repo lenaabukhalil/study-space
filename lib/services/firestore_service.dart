@@ -53,16 +53,59 @@ class FirestoreService {
         );
   }
 
-  Stream<List<Booking>> watchRoomBookingsOnDay(String roomId, DateTime day) {
+  Stream<Set<int>> watchBookedHours(String roomId, DateTime day) {
     final dayStart = DateTime(day.year, day.month, day.day);
     final dayEnd = dayStart.add(const Duration(days: 1));
-    return _bookings
+    return _slots
         .where('roomId', isEqualTo: roomId)
         .where('start', isGreaterThanOrEqualTo: Timestamp.fromDate(dayStart))
         .where('start', isLessThan: Timestamp.fromDate(dayEnd))
         .snapshots()
-        .map(_toBookings);
+        .map(
+          (snapshot) => {
+            for (final doc in snapshot.docs)
+              (doc.data()['start'] as Timestamp).toDate().hour,
+          },
+        );
   }
+
+  Stream<List<Booking>> watchBookingsOnDay(DateTime day) {
+    final dayStart = DateTime(day.year, day.month, day.day);
+    final dayEnd = dayStart.add(const Duration(days: 1));
+    return _bookings
+        .where('start', isGreaterThanOrEqualTo: Timestamp.fromDate(dayStart))
+        .where('start', isLessThan: Timestamp.fromDate(dayEnd))
+        .snapshots()
+        .map(_toBookings)
+        .map(
+          (bookings) => bookings..sort((a, b) => a.start.compareTo(b.start)),
+        );
+  }
+
+  Stream<String?> watchUserRole(String uid) {
+    return _users
+        .doc(uid)
+        .snapshots()
+        .map((doc) => doc.data()?['role'] as String?);
+  }
+
+  Future<bool> hasFutureBookings(String roomId) async {
+    final snapshot = await _bookings
+        .where('roomId', isEqualTo: roomId)
+        .where(
+          'start',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime.now()),
+        )
+        .limit(1)
+        .get();
+    return snapshot.docs.isNotEmpty;
+  }
+
+  Future<void> addRoom(Room room) => _rooms.doc().set(room.toMap());
+
+  Future<void> updateRoom(Room room) => _rooms.doc(room.id).set(room.toMap());
+
+  Future<void> deleteRoom(String roomId) => _rooms.doc(roomId).delete();
 
   Future<void> createUserProfile({
     required String uid,
@@ -83,6 +126,8 @@ class FirestoreService {
     required DateTime start,
     required DateTime end,
     required String paymentMethod,
+    String? userName,
+    String? userEmail,
   }) {
     final bookingRef = _bookings.doc();
     final slotRefs = slotIdsFor(roomId, start, end).map(_slots.doc).toList();
@@ -94,6 +139,8 @@ class FirestoreService {
       end: end,
       createdAt: DateTime.now(),
       paymentMethod: paymentMethod,
+      userName: userName,
+      userEmail: userEmail,
     );
 
     return _db.runTransaction((transaction) async {

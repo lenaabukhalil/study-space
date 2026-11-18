@@ -16,6 +16,8 @@ class BookingProvider extends ChangeNotifier {
   final FirestoreService _firestore;
 
   String? _currentUserId;
+  String? _userName;
+  String? _userEmail;
   StreamSubscription<List<Booking>>? _mySubscription;
   List<Booking> _myBookings = const [];
   bool _isLoadingMyBookings = false;
@@ -23,8 +25,8 @@ class BookingProvider extends ChangeNotifier {
 
   String? _roomId;
   DateTime? _roomDay;
-  StreamSubscription<List<Booking>>? _roomDaySubscription;
-  List<Booking> _roomDayBookings = const [];
+  StreamSubscription<Set<int>>? _roomDaySubscription;
+  Set<int> _bookedHours = const {};
   bool _isLoadingRoomDay = false;
   String? _roomDayError;
 
@@ -41,15 +43,11 @@ class BookingProvider extends ChangeNotifier {
   String? get roomDayError => _roomDayError;
   bool get isSubmitting => _isSubmitting;
 
-  Set<int> get bookedHours {
-    return {
-      for (final booking in _roomDayBookings)
-        for (var hour = booking.start.hour; hour < booking.end.hour; hour++)
-          hour,
-    };
-  }
+  Set<int> get bookedHours => _bookedHours;
 
-  void updateUser(String? userId) {
+  void updateUser(String? userId, {String? name, String? email}) {
+    _userName = (name == null || name.trim().isEmpty) ? null : name.trim();
+    _userEmail = email;
     if (_currentUserId == userId) {
       return;
     }
@@ -97,7 +95,7 @@ class BookingProvider extends ChangeNotifier {
     _roomDaySubscription = null;
     _roomId = null;
     _roomDay = null;
-    _roomDayBookings = const [];
+    _bookedHours = const {};
     _roomDayError = null;
     _isLoadingRoomDay = false;
   }
@@ -127,6 +125,8 @@ class BookingProvider extends ChangeNotifier {
         start: start,
         end: end,
         paymentMethod: paymentMethod,
+        userName: _userName ?? _userEmail,
+        userEmail: _userEmail,
       );
       return const BookingResult.success();
     } on SlotTakenException {
@@ -200,10 +200,14 @@ class BookingProvider extends ChangeNotifier {
     final watchingThisDay = _roomId == roomId && _roomDay == _dayOf(start);
     final hasOverlap =
         watchingThisDay &&
-        _roomDayBookings.any(
-          (booking) =>
-              start.isBefore(booking.end) && end.isAfter(booking.start),
-        );
+        [
+          for (
+            var hour = start.hour;
+            hour < start.hour + duration.inHours;
+            hour++
+          )
+            hour,
+        ].any(_bookedHours.contains);
     if (hasOverlap) {
       return 'This time slot is already booked.';
     }
@@ -239,14 +243,14 @@ class BookingProvider extends ChangeNotifier {
       return;
     }
     _roomDaySubscription?.cancel();
-    _roomDayBookings = const [];
+    _bookedHours = const {};
     _isLoadingRoomDay = true;
     _roomDayError = null;
     _roomDaySubscription = _firestore
-        .watchRoomBookingsOnDay(roomId, day)
+        .watchBookedHours(roomId, day)
         .listen(
-          (bookings) {
-            _roomDayBookings = bookings;
+          (hours) {
+            _bookedHours = hours;
             _isLoadingRoomDay = false;
             _roomDayError = null;
             _notify();

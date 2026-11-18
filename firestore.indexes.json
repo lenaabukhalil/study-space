@@ -1,0 +1,21 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "bookings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "roomId", "order": "ASCENDING" },
+        { "fieldPath": "start", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "slots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "roomId", "order": "ASCENDING" },
+        { "fieldPath": "start", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

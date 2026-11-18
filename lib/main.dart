@@ -1,11 +1,10 @@
-import 'dart:async';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'config/space_info.dart';
 import 'firebase_options.dart';
+import 'providers/admin_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/booking_provider.dart';
 import 'providers/rooms_provider.dart';
@@ -18,21 +17,34 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final firestore = FirestoreService();
-  unawaited(firestore.seedRoomsIfEmpty().catchError((Object _) {}));
   runApp(
     MultiProvider(
       providers: [
         Provider.value(value: firestore),
         ChangeNotifierProvider(
-          create: (_) =>
-              AuthProvider(authService: AuthService(firestore: firestore)),
+          create: (_) => AuthProvider(
+            authService: AuthService(firestore: firestore),
+            firestore: firestore,
+          ),
         ),
-        ChangeNotifierProvider(create: (_) => RoomsProvider(firestore)),
+        ChangeNotifierProxyProvider<AuthProvider, RoomsProvider>(
+          create: (_) => RoomsProvider(firestore),
+          update: (_, auth, rooms) =>
+              (rooms ?? RoomsProvider(firestore))..updateUser(auth.user?.uid),
+        ),
         ChangeNotifierProxyProvider<AuthProvider, BookingProvider>(
           create: (_) => BookingProvider(firestore),
           update: (_, auth, bookings) =>
-              (bookings ?? BookingProvider(firestore))
-                ..updateUser(auth.user?.uid),
+              (bookings ?? BookingProvider(firestore))..updateUser(
+                auth.user?.uid,
+                name: auth.user?.displayName,
+                email: auth.user?.email,
+              ),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, AdminProvider>(
+          create: (_) => AdminProvider(firestore),
+          update: (_, auth, admin) =>
+              (admin ?? AdminProvider(firestore))..updateAdmin(auth.isAdmin),
         ),
       ],
       child: const YasmineWorkspaceApp(),

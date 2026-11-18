@@ -27,7 +27,9 @@ class DateSelector extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 'Open ${OpeningHours.forDate(date).label}',
-                style: TextStyle(color: Colors.grey.shade600),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),

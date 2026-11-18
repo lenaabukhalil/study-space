@@ -19,6 +19,26 @@ class Room {
 
   bool get isDesk => type == 'desk';
 
+  Room copyWith({
+    String? id,
+    String? name,
+    String? type,
+    int? capacity,
+    double? pricePerHour,
+    List<String>? amenities,
+    String? imagePath,
+  }) {
+    return Room(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      capacity: capacity ?? this.capacity,
+      pricePerHour: pricePerHour ?? this.pricePerHour,
+      amenities: amenities ?? this.amenities,
+      imagePath: imagePath ?? this.imagePath,
+    );
+  }
+
   factory Room.fromMap(String id, Map<String, dynamic> map) {
     return Room(
       id: id,

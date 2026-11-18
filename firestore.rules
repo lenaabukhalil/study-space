@@ -1,0 +1,70 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Role is only ever set to "admin" by hand in the Firebase Console.
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ---------- users/{uid} ----------
+    // Own doc: read, create as "customer", update without touching role.
+    // Admin: read all. Nobody deletes from the app.
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid)
+        && request.resource.data.role == 'customer';
+      allow update: if isOwner(uid)
+        && request.resource.data.role == resource.data.role;
+      allow delete: if false;
+    }
+
+    // ---------- rooms ----------
+    match /rooms/{roomId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ---------- bookings ----------
+    // Owner may cancel only more than 1 hour before start; admin anytime.
+    match /bookings/{bookingId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.start < request.resource.data.end
+        && request.resource.data.start > request.time;
+      allow delete: if isAdmin()
+        || (isOwner(resource.data.userId)
+            && resource.data.start > request.time + duration.value(1, 'h'));
+      allow update: if false;
+    }
+
+    // ---------- slots (per-hour lock docs: roomId_yyyyMMdd_HH) ----------
+    // Readable by any signed-in user so availability can be shown.
+    match /slots/{slotId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+      allow update: if false;
+    }
+
+    // ---------- Everything else ----------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

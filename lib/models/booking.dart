@@ -10,6 +10,8 @@ class Booking {
   final DateTime end;
   final DateTime createdAt;
   final String paymentMethod;
+  final String? userName;
+  final String? userEmail;
 
   const Booking({
     required this.id,
@@ -19,6 +21,8 @@ class Booking {
     required this.end,
     required this.createdAt,
     required this.paymentMethod,
+    this.userName,
+    this.userEmail,
   });
 
   int get durationHours => end.difference(start).inHours;
@@ -34,6 +38,8 @@ class Booking {
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? start,
       paymentMethod:
           map['paymentMethod'] as String? ?? PaymentMethods.frontDesk,
+      userName: map['userName'] as String?,
+      userEmail: map['userEmail'] as String?,
     );
   }
 
@@ -45,6 +51,8 @@ class Booking {
       'end': Timestamp.fromDate(end),
       'createdAt': FieldValue.serverTimestamp(),
       'paymentMethod': paymentMethod,
+      'userName': userName,
+      'userEmail': userEmail,
     };
   }
 }

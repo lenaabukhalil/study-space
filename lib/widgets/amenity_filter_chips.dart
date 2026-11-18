@@ -26,7 +26,7 @@ class AmenityFilterChips extends StatelessWidget {
   Widget build(BuildContext context) {
     return Wrap(
       spacing: 8,
-      runSpacing: 4,
+      runSpacing: 8,
       children: Amenities.all
           .map(
             (amenity) => FilterChip(

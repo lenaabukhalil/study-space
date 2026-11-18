@@ -37,66 +37,54 @@ class TimeSlotTile extends StatelessWidget {
     return null;
   }
 
-  Color _backgroundColor(ColorScheme scheme) {
+  (Color, Color, Color?) _colors(ColorScheme scheme) {
     if (isSelected) {
-      return scheme.primary;
+      return (scheme.primary, scheme.onPrimary, null);
     }
     if (isInRange) {
-      return Color.alphaBlend(
-        scheme.primary.withValues(alpha: 0.35),
-        scheme.surface,
+      return (scheme.primaryContainer, scheme.onPrimaryContainer, null);
+    }
+    if (isBooked) {
+      return (scheme.errorContainer, scheme.onErrorContainer, null);
+    }
+    if (isPast || isUnavailable) {
+      return (
+        scheme.surfaceContainerHighest,
+        scheme.onSurface.withValues(alpha: 0.38),
+        null,
       );
     }
-    if (isBooked) {
-      return scheme.errorContainer;
-    }
-    if (isPast || isUnavailable) {
-      return scheme.surfaceContainerHighest;
-    }
-    return scheme.primaryContainer.withValues(alpha: 0.5);
-  }
-
-  Color _textColor(ColorScheme scheme, Color background) {
-    if (isSelected || isInRange) {
-      final isDark =
-          ThemeData.estimateBrightnessForColor(background) == Brightness.dark;
-      return isDark ? scheme.onPrimary : scheme.onPrimaryContainer;
-    }
-    if (isBooked) {
-      return scheme.onErrorContainer;
-    }
-    if (isPast || isUnavailable) {
-      return scheme.onSurface.withValues(alpha: 0.38);
-    }
-    return scheme.onPrimaryContainer;
+    return (scheme.surface, scheme.onSurface, scheme.outline);
   }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final background = _backgroundColor(scheme);
-    final textColor = _textColor(scheme, background);
+    final theme = Theme.of(context);
+    final (background, foreground, border) = _colors(theme.colorScheme);
     final caption = _caption;
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+      side: border == null ? BorderSide.none : BorderSide(color: border),
+    );
 
     return Material(
       color: background,
-      borderRadius: BorderRadius.circular(10),
+      shape: shape,
       child: InkWell(
-        borderRadius: BorderRadius.circular(10),
+        customBorder: shape,
         onTap: _isDisabled ? null : onTap,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               label(hour),
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: textColor,
-              ),
+              style: theme.textTheme.labelLarge?.copyWith(color: foreground),
             ),
             if (caption != null)
-              Text(caption, style: TextStyle(fontSize: 11, color: textColor)),
+              Text(
+                caption,
+                style: theme.textTheme.bodyMedium?.copyWith(color: foreground),
+              ),
           ],
         ),
       ),

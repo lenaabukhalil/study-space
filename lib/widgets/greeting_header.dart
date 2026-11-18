@@ -32,29 +32,30 @@ class GreetingHeader extends StatelessWidget {
     );
     final firstName = _firstName(displayName);
     final greeting = _timeGreeting(DateTime.now());
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           SpaceInfo.name.toUpperCase(),
-          style: TextStyle(
-            fontSize: 12,
+          style: theme.textTheme.labelLarge?.copyWith(
             letterSpacing: 1.2,
-            fontWeight: FontWeight.w600,
             color: scheme.primary,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Text(
           firstName == null ? greeting : '$greeting, $firstName',
-          style: Theme.of(context).textTheme.headlineMedium,
+          style: theme.textTheme.headlineMedium,
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Text(
           'Find your space in ${SpaceInfo.area}',
-          style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: scheme.onSurfaceVariant,
+          ),
         ),
       ],
     );

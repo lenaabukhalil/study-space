@@ -78,9 +78,9 @@ class _BookingConfirmationSheetState extends State<BookingConfirmationSheet> {
               emphasize: true,
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Payment method',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             PaymentMethodSelector(
               value: _paymentMethod,
@@ -89,9 +89,6 @@ class _BookingConfirmationSheetState extends State<BookingConfirmationSheet> {
             const SizedBox(height: 16),
             FilledButton(
               onPressed: () => Navigator.pop(context, _paymentMethod),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-              ),
               child: const Text('Confirm booking'),
             ),
             const SizedBox(height: 8),

@@ -8,6 +8,8 @@ class CancelLockedHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurfaceVariant;
     final notice = Formatters.hours(BookingProvider.cancellationNotice.inHours);
 
     return Tooltip(
@@ -17,11 +19,10 @@ class CancelLockedHint extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.lock_clock, size: 20, color: Colors.grey.shade500),
-            const SizedBox(height: 2),
+            Icon(Icons.lock_clock, size: 20, color: muted),
             Text(
               "Can't cancel",
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+              style: theme.textTheme.bodyMedium?.copyWith(color: muted),
             ),
           ],
         ),

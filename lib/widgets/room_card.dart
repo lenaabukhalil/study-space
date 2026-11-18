@@ -4,6 +4,7 @@ import '../models/room.dart';
 import '../screens/room_details_screen.dart';
 import '../utils/formatters.dart';
 import 'amenity_chips.dart';
+import 'price_text.dart';
 import 'room_image.dart';
 
 class RoomCard extends StatelessWidget {
@@ -21,7 +22,6 @@ class RoomCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => _openDetails(context),
@@ -30,7 +30,7 @@ class RoomCard extends StatelessWidget {
           children: [
             Expanded(child: RoomImage(imagePath: room.imagePath)),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               child: _RoomCardDetails(room: room),
             ),
           ],
@@ -47,7 +47,8 @@ class _RoomCardDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurfaceVariant;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,29 +57,23 @@ class _RoomCardDetails extends StatelessWidget {
           room.name,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: theme.textTheme.titleMedium,
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Row(
           children: [
-            Icon(Icons.people, size: 16, color: Colors.grey.shade600),
-            const SizedBox(width: 4),
+            Icon(Icons.people_outline, size: 16, color: muted),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
                 Formatters.capacity(room.capacity),
-                style: TextStyle(color: Colors.grey.shade700),
+                style: theme.textTheme.bodyMedium?.copyWith(color: muted),
               ),
             ),
-            Text(
-              Formatters.pricePerHour(room.pricePerHour),
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: scheme.primary,
-              ),
-            ),
+            PriceText(text: Formatters.pricePerHour(room.pricePerHour)),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         AmenityChips(amenities: room.amenities, maxCount: 3),
       ],
     );

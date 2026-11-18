@@ -7,6 +7,8 @@ import '../providers/rooms_provider.dart';
 import '../screens/room_form_screen.dart';
 import 'admin_room_tile.dart';
 import 'confirm_dialog.dart';
+import 'content_width.dart';
+import 'empty_state.dart';
 import 'error_state.dart';
 
 class AdminRoomsTab extends StatelessWidget {
@@ -54,17 +56,13 @@ class AdminRoomsTab extends StatelessWidget {
     } else if (error != null) {
       body = ErrorState(message: error, onRetry: provider.retry);
     } else if (rooms.isEmpty) {
-      body = Center(
-        child: Text(
-          'No rooms yet',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
+      body = const EmptyState(
+        icon: Icons.meeting_room_outlined,
+        message: 'No rooms yet',
       );
     } else {
       body = ListView.builder(
-        padding: const EdgeInsets.only(top: 8, bottom: 88),
+        padding: const EdgeInsets.only(top: 16, bottom: 96),
         itemCount: rooms.length,
         itemBuilder: (context, index) {
           final room = rooms[index];
@@ -78,7 +76,7 @@ class AdminRoomsTab extends StatelessWidget {
     }
 
     return Scaffold(
-      body: body,
+      body: ContentWidth(child: body),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(context),
         icon: const Icon(Icons.add),

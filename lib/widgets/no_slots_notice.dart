@@ -7,21 +7,21 @@ class NoSlotsNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Card(
-      color: scheme.secondaryContainer,
-      margin: EdgeInsets.zero,
+      color: scheme.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
         child: Row(
           children: [
-            Icon(Icons.event_busy, color: scheme.onSecondaryContainer),
+            Icon(Icons.event_busy, color: scheme.onSurfaceVariant),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 'No available times on this day. Try another date.',
-                style: TextStyle(color: scheme.onSecondaryContainer),
+                style: theme.textTheme.bodyMedium,
               ),
             ),
             TextButton(onPressed: onPickDate, child: const Text('Pick date')),

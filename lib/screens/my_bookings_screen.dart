@@ -5,32 +5,22 @@ import '../models/booking.dart';
 import '../providers/booking_provider.dart';
 import '../providers/rooms_provider.dart';
 import '../widgets/booking_tile.dart';
+import '../widgets/confirm_dialog.dart';
+import '../widgets/content_width.dart';
+import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 
 class MyBookingsScreen extends StatelessWidget {
   const MyBookingsScreen({super.key});
 
   Future<void> _confirmCancel(BuildContext context, Booking booking) async {
-    final errorColor = Theme.of(context).colorScheme.error;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Cancel booking?'),
-        content: const Text('Are you sure you want to cancel this booking?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('No'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text('Yes', style: TextStyle(color: errorColor)),
-          ),
-        ],
-      ),
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: 'Cancel booking?',
+      message: 'Are you sure you want to cancel this booking?',
     );
 
-    if (confirmed != true || !context.mounted) {
+    if (!confirmed || !context.mounted) {
       return;
     }
 
@@ -45,7 +35,9 @@ class MyBookingsScreen extends StatelessWidget {
         content: Text(
           result.success ? 'Booking cancelled' : result.errorMessage!,
         ),
-        backgroundColor: result.success ? null : errorColor,
+        backgroundColor: result.success
+            ? null
+            : Theme.of(context).colorScheme.error,
       ),
     );
   }
@@ -66,7 +58,10 @@ class MyBookingsScreen extends StatelessWidget {
         onRetry: bookingProvider.retryMyBookings,
       );
     } else if (bookings.isEmpty) {
-      body = const _EmptyBookings();
+      body = const EmptyState(
+        icon: Icons.event_busy,
+        message: 'You have no bookings yet',
+      );
     } else {
       body = ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -86,30 +81,7 @@ class MyBookingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('My Bookings')),
-      body: body,
-    );
-  }
-}
-
-class _EmptyBookings extends StatelessWidget {
-  const _EmptyBookings();
-
-  @override
-  Widget build(BuildContext context) {
-    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.event_busy, size: 64, color: muted),
-          const SizedBox(height: 12),
-          Text(
-            'You have no bookings yet',
-            style: TextStyle(fontSize: 16, color: muted),
-          ),
-        ],
-      ),
+      body: ContentWidth(child: body),
     );
   }
 }

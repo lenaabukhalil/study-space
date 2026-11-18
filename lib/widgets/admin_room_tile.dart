@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/room.dart';
 import '../utils/formatters.dart';
+import 'price_text.dart';
 
 class AdminRoomTile extends StatelessWidget {
   final Room room;
@@ -17,38 +18,42 @@ class AdminRoomTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
+        contentPadding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
         leading: CircleAvatar(
-          backgroundColor: scheme.secondaryContainer,
+          backgroundColor: scheme.primaryContainer,
           child: Icon(
-            room.isDesk ? Icons.desk : Icons.meeting_room,
+            room.isDesk ? Icons.desk : Icons.meeting_room_outlined,
             color: scheme.primary,
           ),
         ),
-        title: Text(
-          room.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          '${room.isDesk ? 'Desk' : 'Room'} · '
-          '${Formatters.capacity(room.capacity)} · '
-          '${Formatters.pricePerHour(room.pricePerHour)}',
-          style: TextStyle(color: scheme.onSurfaceVariant),
+        title: Text(room.name),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${room.isDesk ? 'Desk' : 'Room'} · '
+              '${Formatters.capacity(room.capacity)}',
+            ),
+            PriceText(text: Formatters.pricePerHour(room.pricePerHour)),
+          ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(Icons.edit, color: scheme.primary),
+              icon: Icon(Icons.edit_outlined, color: scheme.primary),
               tooltip: 'Edit room',
               onPressed: onEdit,
             ),
             IconButton(
-              icon: Icon(Icons.delete, color: scheme.error),
+              icon: Icon(Icons.delete_outline, color: scheme.error),
               tooltip: 'Delete room',
               onPressed: onDelete,
             ),

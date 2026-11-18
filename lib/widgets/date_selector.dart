@@ -11,6 +11,8 @@ class DateSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Row(
       children: [
         Expanded(
@@ -19,21 +21,18 @@ class DateSelector extends StatelessWidget {
             children: [
               Text(
                 DateFormat('EEEE, d MMMM yyyy').format(date),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: theme.textTheme.titleMedium,
               ),
-              const SizedBox(height: 2),
               Text(
                 'Open ${OpeningHours.forDate(date).label}',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
           ),
         ),
+        const SizedBox(width: 12),
         OutlinedButton.icon(
           onPressed: onChange,
           icon: const Icon(Icons.calendar_today, size: 18),

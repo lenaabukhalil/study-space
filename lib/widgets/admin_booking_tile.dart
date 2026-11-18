@@ -17,23 +17,20 @@ class AdminBookingTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final muted = TextStyle(color: scheme.onSurfaceVariant);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final name = booking.userName ?? 'Unknown customer';
     final email = booking.userEmail;
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         contentPadding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
         leading: CircleAvatar(
-          backgroundColor: scheme.secondaryContainer,
+          backgroundColor: scheme.primaryContainer,
           child: Icon(Icons.event, color: scheme.primary),
         ),
-        title: Text(
-          roomName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: Text(roomName),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -41,19 +38,19 @@ class AdminBookingTile extends StatelessWidget {
             Text(
               '${Formatters.timeRange(booking.start, booking.end)} '
               '(${Formatters.hours(booking.durationHours)})',
-              style: muted,
             ),
-            Text(name, style: muted),
-            if (email != null && email != name) Text(email, style: muted),
-            const SizedBox(height: 2),
+            Text(name),
+            if (email != null && email != name) Text(email),
             Text(
               booking.paymentMethod,
-              style: TextStyle(fontSize: 12, color: scheme.primary),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.primary,
+              ),
             ),
           ],
         ),
         trailing: IconButton(
-          icon: Icon(Icons.cancel, color: scheme.error),
+          icon: Icon(Icons.cancel_outlined, color: scheme.error),
           tooltip: 'Cancel booking',
           onPressed: onCancel,
         ),

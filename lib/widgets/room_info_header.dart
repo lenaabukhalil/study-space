@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/room.dart';
 import '../utils/formatters.dart';
 import 'amenity_chips.dart';
+import 'price_text.dart';
 
 class RoomInfoHeader extends StatelessWidget {
   final Room room;
@@ -11,28 +12,26 @@ class RoomInfoHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(room.name, style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 4),
-        Text(
-          Formatters.pricePerHour(room.pricePerHour),
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: scheme.primary,
-          ),
+        Text(room.name, style: Theme.of(context).textTheme.headlineMedium),
+        const SizedBox(height: 8),
+        PriceText(
+          text: Formatters.pricePerHour(room.pricePerHour),
+          large: true,
+        ),
+        const SizedBox(height: 12),
+        _InfoRow(
+          icon: room.isDesk ? Icons.desk : Icons.meeting_room_outlined,
+          text: room.isDesk ? 'Desk' : 'Room',
         ),
         const SizedBox(height: 8),
         _InfoRow(
-          icon: room.isDesk ? Icons.desk : Icons.meeting_room,
-          text: room.isDesk ? 'Desk' : 'Room',
+          icon: Icons.people_outline,
+          text: Formatters.capacity(room.capacity),
         ),
-        _InfoRow(icon: Icons.people, text: Formatters.capacity(room.capacity)),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         AmenityChips(amenities: room.amenities),
       ],
     );
@@ -47,15 +46,15 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(width: 8),
-          Text(text, style: const TextStyle(fontSize: 16)),
-        ],
-      ),
+    final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurfaceVariant;
+
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: muted),
+        const SizedBox(width: 8),
+        Text(text, style: theme.textTheme.bodyLarge?.copyWith(color: muted)),
+      ],
     );
   }
 }

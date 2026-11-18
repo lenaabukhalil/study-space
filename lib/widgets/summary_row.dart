@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'price_text.dart';
+
 class SummaryRow extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -16,27 +18,31 @@ class SummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 20, color: scheme.primary),
           const SizedBox(width: 12),
-          Text(label, style: TextStyle(color: Colors.grey.shade700)),
+          Text(
+            label,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: TextStyle(
-                fontSize: emphasize ? 18 : 14,
-                fontWeight: emphasize ? FontWeight.bold : FontWeight.w600,
-                color: emphasize ? scheme.primary : null,
-              ),
-            ),
+            child: emphasize
+                ? PriceText(text: value, large: true, textAlign: TextAlign.end)
+                : Text(
+                    value,
+                    textAlign: TextAlign.end,
+                    style: theme.textTheme.labelLarge,
+                  ),
           ),
         ],
       ),

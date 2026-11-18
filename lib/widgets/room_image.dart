@@ -13,17 +13,19 @@ class RoomImage extends StatelessWidget {
       height: height ?? double.infinity,
       width: double.infinity,
       fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) => _fallbackIcon(),
+      errorBuilder: (context, error, stackTrace) => _fallback(context),
     );
   }
 
-  Widget _fallbackIcon() {
+  Widget _fallback(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       height: height ?? double.infinity,
       width: double.infinity,
-      color: Colors.grey.shade200,
+      color: scheme.surfaceContainerHighest,
       alignment: Alignment.center,
-      child: Icon(Icons.chair_alt, size: 48, color: Colors.grey.shade500),
+      child: Icon(Icons.chair_alt, size: 48, color: scheme.onSurfaceVariant),
     );
   }
 }

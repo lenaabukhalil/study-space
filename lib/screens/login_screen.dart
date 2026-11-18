@@ -45,16 +45,17 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    final scheme = Theme.of(context).colorScheme;
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
         content: Text(auth.errorMessage ?? 'Sign in failed.'),
-        backgroundColor: Colors.red,
+        backgroundColor: scheme.error,
         action: auth.isCredentialError
             ? SnackBarAction(
                 label: 'Sign up',
-                textColor: Colors.white,
+                textColor: scheme.onError,
                 onPressed: widget.onSwitchToSignUp,
               )
             : null,

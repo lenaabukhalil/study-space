@@ -7,6 +7,7 @@ import '../providers/booking_provider.dart';
 import '../widgets/booking_confirmation_sheet.dart';
 import '../widgets/booking_policy_dialog.dart';
 import '../widgets/booking_success_dialog.dart';
+import '../widgets/content_width.dart';
 import '../widgets/date_selector.dart';
 import '../widgets/duration_dropdown.dart';
 import '../widgets/error_state.dart';
@@ -166,51 +167,42 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
           ),
         ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 800),
-          child: ListView(
-            children: [
-              RoomImage(imagePath: room.imagePath, height: 240),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    RoomInfoHeader(room: room),
-                    const SizedBox(height: 24),
-                    DateSelector(date: _selectedDate, onChange: _pickDate),
-                    const SizedBox(height: 16),
-                    DurationDropdown(
-                      value: _duration,
-                      onChanged: _changeDuration,
-                    ),
-                    if (_selectedHour != null) ...[
-                      const SizedBox(height: 12),
-                      SelectionSummary(
-                        start: _selectedDate.add(
-                          Duration(hours: _selectedHour!),
-                        ),
-                        duration: _duration,
-                        pricePerHour: room.pricePerHour,
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    _buildSlots(provider),
-                  ],
-                ),
+      body: ContentWidth(
+        child: ListView(
+          padding: const EdgeInsets.only(top: 8, bottom: 24),
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: RoomImage(imagePath: room.imagePath, height: 240),
+            ),
+            const SizedBox(height: 24),
+            RoomInfoHeader(room: room),
+            const SizedBox(height: 24),
+            DateSelector(date: _selectedDate, onChange: _pickDate),
+            const SizedBox(height: 16),
+            DurationDropdown(value: _duration, onChanged: _changeDuration),
+            if (_selectedHour != null) ...[
+              const SizedBox(height: 12),
+              SelectionSummary(
+                start: _selectedDate.add(Duration(hours: _selectedHour!)),
+                duration: _duration,
+                pricePerHour: room.pricePerHour,
               ),
             ],
-          ),
+            const SizedBox(height: 16),
+            _buildSlots(provider),
+          ],
         ),
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: LoadingButton(
-            label: 'Book',
-            isLoading: provider.isSubmitting,
-            onPressed: _selectedHour == null ? null : _book,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: ContentWidth(
+            child: LoadingButton(
+              label: 'Book',
+              isLoading: provider.isSubmitting,
+              onPressed: _selectedHour == null ? null : _book,
+            ),
           ),
         ),
       ),

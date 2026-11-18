@@ -6,7 +6,9 @@ import '../providers/admin_provider.dart';
 import '../providers/rooms_provider.dart';
 import 'admin_booking_tile.dart';
 import 'confirm_dialog.dart';
+import 'content_width.dart';
 import 'date_selector.dart';
+import 'empty_state.dart';
 import 'error_state.dart';
 
 class AdminBookingsTab extends StatelessWidget {
@@ -67,17 +69,13 @@ class AdminBookingsTab extends StatelessWidget {
     } else if (error != null) {
       body = ErrorState(message: error, onRetry: admin.retry);
     } else if (bookings.isEmpty) {
-      body = Center(
-        child: Text(
-          'No bookings on this day',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
+      body = const EmptyState(
+        icon: Icons.event_available,
+        message: 'No bookings on this day',
       );
     } else {
       body = ListView.builder(
-        padding: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.only(bottom: 24),
         itemCount: bookings.length,
         itemBuilder: (context, index) {
           final booking = bookings[index];
@@ -90,17 +88,19 @@ class AdminBookingsTab extends StatelessWidget {
       );
     }
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: DateSelector(
-            date: admin.selectedDate,
-            onChange: () => _pickDate(context),
+    return ContentWidth(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: DateSelector(
+              date: admin.selectedDate,
+              onChange: () => _pickDate(context),
+            ),
           ),
-        ),
-        Expanded(child: body),
-      ],
+          Expanded(child: body),
+        ],
+      ),
     );
   }
 }

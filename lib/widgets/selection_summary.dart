@@ -16,27 +16,36 @@ class SelectionSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final end = start.add(Duration(hours: duration));
     final text =
         'Selected: ${Formatters.timeRange(start, end)} '
         '(${Formatters.hours(duration)}) · '
         '${Formatters.price(pricePerHour * duration)}';
 
-    return Row(
-      children: [
-        Icon(Icons.check_circle, size: 18, color: scheme.primary),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: scheme.primary,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.primaryContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(Icons.check_circle, size: 20, color: scheme.primary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                text,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: scheme.onPrimaryContainer,
+                ),
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

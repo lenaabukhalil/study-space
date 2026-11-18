@@ -20,21 +20,21 @@ class BookingTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final muted = TextStyle(color: Colors.grey.shade700);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final muted = theme.textTheme.bodyMedium?.copyWith(
+      color: scheme.onSurfaceVariant,
+    );
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         contentPadding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
         leading: CircleAvatar(
-          backgroundColor: scheme.secondaryContainer,
+          backgroundColor: scheme.primaryContainer,
           child: Icon(Icons.event, color: scheme.primary),
         ),
-        title: Text(
-          roomName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: Text(roomName),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -44,19 +44,20 @@ class BookingTile extends StatelessWidget {
               '${Formatters.timeRange(booking.start, booking.end)} (${Formatters.hours(booking.durationHours)})',
               style: muted,
             ),
-            const SizedBox(height: 2),
             Row(
               children: [
                 Icon(
-                  Icons.account_balance_wallet,
-                  size: 14,
+                  Icons.account_balance_wallet_outlined,
+                  size: 16,
                   color: scheme.primary,
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     booking.paymentMethod,
-                    style: TextStyle(fontSize: 12, color: scheme.primary),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.primary,
+                    ),
                   ),
                 ),
               ],
@@ -65,7 +66,7 @@ class BookingTile extends StatelessWidget {
         ),
         trailing: canCancel
             ? IconButton(
-                icon: Icon(Icons.cancel, color: Colors.red.shade400),
+                icon: Icon(Icons.cancel_outlined, color: scheme.error),
                 tooltip: 'Cancel booking',
                 onPressed: onCancel,
               )

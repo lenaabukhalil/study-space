@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/rooms_provider.dart';
+import '../theme/app_layout.dart';
 import '../widgets/error_state.dart';
 import '../widgets/greeting_header.dart';
 import '../widgets/room_card.dart';
@@ -11,9 +12,10 @@ import '../widgets/room_card.dart';
 class RoomsScreen extends StatelessWidget {
   const RoomsScreen({super.key});
 
-  static const double _maxContentWidth = 1100;
-  static const double _gutter = 16;
-  static const double _cardHeight = 330;
+  static const double _maxContentWidth = AppLayout.gridMaxWidth;
+  static const double _gutter = AppLayout.gutter;
+  static const double _gridSpacing = 16;
+  static const double _cardHeight = 336;
 
   int _columnsFor(double width) {
     if (width < 600) {
@@ -48,7 +50,7 @@ class RoomsScreen extends StatelessWidget {
                   sliver: const SliverToBoxAdapter(child: GreetingHeader()),
                 ),
                 SliverPadding(
-                  padding: padding.copyWith(bottom: 12),
+                  padding: padding.copyWith(bottom: 16),
                   sliver: const SliverToBoxAdapter(child: _FilterChips()),
                 ),
                 SliverPadding(
@@ -56,7 +58,7 @@ class RoomsScreen extends StatelessWidget {
                   sliver: _RoomsSliver(
                     columns: _columnsFor(contentWidth),
                     cardHeight: _cardHeight,
-                    gutter: _gutter,
+                    gutter: _gridSpacing,
                   ),
                 ),
               ],

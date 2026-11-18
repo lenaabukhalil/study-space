@@ -42,7 +42,11 @@ class BookingSuccessDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: Icon(Icons.check_circle, color: Colors.green.shade600, size: 56),
+      icon: Icon(
+        Icons.check_circle,
+        color: Theme.of(context).colorScheme.primary,
+        size: 48,
+      ),
       title: const Text('Booking confirmed'),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
@@ -65,7 +69,7 @@ class BookingSuccessDialog extends StatelessWidget {
               label: 'Payment',
               value: paymentMethod,
             ),
-            const Divider(height: 20),
+            const Divider(height: 24),
             SummaryRow(
               icon: Icons.payments,
               label: 'Total',

@@ -33,9 +33,9 @@ class TimeSlotGrid extends StatelessWidget {
       maxCrossAxisExtent: 160,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 8,
-      crossAxisSpacing: 8,
-      childAspectRatio: 2.2,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 2,
       children: hours
           .map(
             (hour) => TimeSlotTile(

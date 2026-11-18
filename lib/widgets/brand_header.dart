@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../config/space_info.dart';
+import 'brand_logo.dart';
 
 class BrandHeader extends StatelessWidget {
   final String title;
@@ -12,15 +13,14 @@ class BrandHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final muted = theme.textTheme.bodyMedium?.copyWith(
+      color: scheme.onSurfaceVariant,
+    );
 
     return Column(
       children: [
-        CircleAvatar(
-          radius: 38,
-          backgroundColor: scheme.secondary,
-          child: Icon(Icons.local_florist, size: 40, color: scheme.primary),
-        ),
-        const SizedBox(height: 14),
+        const BrandLogo(),
+        const SizedBox(height: 16),
         Text(
           SpaceInfo.name,
           textAlign: TextAlign.center,
@@ -28,12 +28,8 @@ class BrandHeader extends StatelessWidget {
             color: scheme.primary,
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          SpaceInfo.tagline,
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.grey.shade600),
-        ),
+        const SizedBox(height: 8),
+        Text(SpaceInfo.tagline, textAlign: TextAlign.center, style: muted),
         const SizedBox(height: 32),
         Text(
           title,
@@ -41,12 +37,8 @@ class BrandHeader extends StatelessWidget {
           style: theme.textTheme.titleLarge,
         ),
         if (subtitle != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            subtitle!,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey.shade600),
-          ),
+          const SizedBox(height: 8),
+          Text(subtitle!, textAlign: TextAlign.center, style: muted),
         ],
         const SizedBox(height: 24),
       ],

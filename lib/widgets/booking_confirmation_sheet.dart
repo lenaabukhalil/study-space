@@ -2,20 +2,24 @@ import 'package:flutter/material.dart';
 
 import '../models/payment_method.dart';
 import '../models/room.dart';
+import '../models/weather_forecast.dart';
 import '../utils/formatters.dart';
 import 'payment_method_selector.dart';
 import 'summary_row.dart';
+import 'weather_summary_row.dart';
 
 class BookingConfirmationSheet extends StatefulWidget {
   final Room room;
   final DateTime start;
   final DateTime end;
+  final WeatherForecast? weather;
 
   const BookingConfirmationSheet({
     super.key,
     required this.room,
     required this.start,
     required this.end,
+    this.weather,
   });
 
   static Future<String?> show(
@@ -23,13 +27,18 @@ class BookingConfirmationSheet extends StatefulWidget {
     required Room room,
     required DateTime start,
     required DateTime end,
+    WeatherForecast? weather,
   }) {
     return showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (_) =>
-          BookingConfirmationSheet(room: room, start: start, end: end),
+      builder: (_) => BookingConfirmationSheet(
+        room: room,
+        start: start,
+        end: end,
+        weather: weather,
+      ),
     );
   }
 
@@ -44,6 +53,7 @@ class _BookingConfirmationSheetState extends State<BookingConfirmationSheet> {
   @override
   Widget build(BuildContext context) {
     final room = widget.room;
+    final weather = widget.weather;
     final hours = widget.end.difference(widget.start).inHours;
 
     return SafeArea(
@@ -70,6 +80,7 @@ class _BookingConfirmationSheetState extends State<BookingConfirmationSheet> {
               value:
                   '${Formatters.timeRange(widget.start, widget.end)} (${Formatters.hours(hours)})',
             ),
+            if (weather != null) WeatherSummaryRow(forecast: weather),
             const Divider(height: 24),
             SummaryRow(
               icon: Icons.payments,

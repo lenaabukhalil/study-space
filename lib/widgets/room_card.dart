@@ -4,6 +4,7 @@ import '../models/room.dart';
 import '../screens/room_details_screen.dart';
 import '../utils/formatters.dart';
 import 'amenity_chips.dart';
+import 'favorite_button.dart';
 import 'price_text.dart';
 import 'room_image.dart';
 
@@ -28,7 +29,19 @@ class RoomCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(child: RoomImage(imagePath: room.imagePath)),
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  RoomImage(imagePath: room.imagePath),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: FavoriteButton(roomId: room.id, onImage: true),
+                  ),
+                ],
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.all(16),
               child: _RoomCardDetails(room: room),

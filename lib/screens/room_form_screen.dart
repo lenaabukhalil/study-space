@@ -7,6 +7,7 @@ import '../providers/admin_provider.dart';
 import '../theme/app_layout.dart';
 import '../utils/validators.dart';
 import '../widgets/amenity_filter_chips.dart';
+import '../widgets/bottom_action_bar.dart';
 import '../widgets/content_width.dart';
 import '../widgets/loading_button.dart';
 
@@ -204,17 +205,12 @@ class _RoomFormScreenState extends State<RoomFormScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: ContentWidth(
-            maxWidth: AppLayout.formMaxWidth,
-            child: LoadingButton(
-              label: _isNew ? 'Add room' : 'Save changes',
-              isLoading: isSaving,
-              onPressed: _save,
-            ),
-          ),
+      bottomNavigationBar: BottomActionBar(
+        maxWidth: AppLayout.formMaxWidth,
+        child: LoadingButton(
+          label: _isNew ? 'Add room' : 'Save changes',
+          isLoading: isSaving,
+          onPressed: _save,
         ),
       ),
     );

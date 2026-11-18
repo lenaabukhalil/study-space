@@ -4,19 +4,23 @@ import 'package:provider/provider.dart';
 import '../config/space_info.dart';
 import '../models/room.dart';
 import '../providers/booking_provider.dart';
+import '../providers/weather_provider.dart';
 import '../widgets/booking_confirmation_sheet.dart';
 import '../widgets/booking_policy_dialog.dart';
+import '../widgets/bottom_action_bar.dart';
 import '../widgets/booking_success_dialog.dart';
 import '../widgets/content_width.dart';
 import '../widgets/date_selector.dart';
 import '../widgets/duration_dropdown.dart';
 import '../widgets/error_state.dart';
+import '../widgets/favorite_button.dart';
 import '../widgets/loading_button.dart';
 import '../widgets/no_slots_notice.dart';
 import '../widgets/room_image.dart';
 import '../widgets/room_info_header.dart';
 import '../widgets/selection_summary.dart';
 import '../widgets/time_slot_grid.dart';
+import '../widgets/weather_row.dart';
 
 class RoomDetailsScreen extends StatefulWidget {
   final Room room;
@@ -29,16 +33,20 @@ class RoomDetailsScreen extends StatefulWidget {
 
 class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
   late final BookingProvider _bookings;
+  late final WeatherProvider _weather;
   late DateTime _selectedDate;
   int? _selectedHour;
-  int _duration = 1;
+  late int _duration;
 
   @override
   void initState() {
     super.initState();
     _selectedDate = _today();
     _bookings = context.read<BookingProvider>();
+    _weather = context.read<WeatherProvider>();
+    _duration = _bookings.preferredDuration;
     _bookings.watchRoomDay(widget.room.id, _selectedDate);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _weather.load());
   }
 
   @override
@@ -79,6 +87,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     );
     if (picked != null && picked != _selectedDate) {
       _bookings.watchRoomDay(widget.room.id, picked);
+      _weather.load();
       setState(() {
         _selectedDate = picked;
         _selectedHour = null;
@@ -88,6 +97,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
 
   void _changeDuration(int duration) {
     final booked = _bookings.bookedHours;
+    _bookings.setPreferredDuration(duration);
     setState(() {
       _duration = duration;
       final selected = _selectedHour;
@@ -107,12 +117,14 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     final room = widget.room;
     final start = _selectedDate.add(Duration(hours: _selectedHour!));
     final end = start.add(Duration(hours: _duration));
+    final weather = _weather.forecastFor(start);
 
     final paymentMethod = await BookingConfirmationSheet.show(
       context,
       room: room,
       start: start,
       end: end,
+      weather: weather,
     );
     if (paymentMethod == null || !mounted) {
       return;
@@ -148,6 +160,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
       end: end,
       total: room.pricePerHour * _duration,
       paymentMethod: paymentMethod,
+      weather: weather,
     );
   }
 
@@ -160,6 +173,7 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
       appBar: AppBar(
         title: Text(room.name),
         actions: [
+          FavoriteButton(roomId: room.id),
           IconButton(
             icon: const Icon(Icons.info_outline),
             tooltip: 'Booking policy',
@@ -179,6 +193,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
             RoomInfoHeader(room: room),
             const SizedBox(height: 24),
             DateSelector(date: _selectedDate, onChange: _pickDate),
+            const SizedBox(height: 8),
+            WeatherRow(date: _selectedDate),
             const SizedBox(height: 16),
             DurationDropdown(value: _duration, onChanged: _changeDuration),
             if (_selectedHour != null) ...[
@@ -194,16 +210,11 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: ContentWidth(
-            child: LoadingButton(
-              label: 'Book',
-              isLoading: provider.isSubmitting,
-              onPressed: _selectedHour == null ? null : _book,
-            ),
-          ),
+      bottomNavigationBar: BottomActionBar(
+        child: LoadingButton(
+          label: 'Book',
+          isLoading: provider.isSubmitting,
+          onPressed: _selectedHour == null ? null : _book,
         ),
       ),
     );

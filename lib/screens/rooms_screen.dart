@@ -3,11 +3,14 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/favorites_provider.dart';
 import '../providers/rooms_provider.dart';
 import '../theme/app_layout.dart';
+import '../widgets/empty_state.dart';
 import '../widgets/error_state.dart';
 import '../widgets/greeting_header.dart';
 import '../widgets/room_card.dart';
+import '../widgets/room_filter_chips.dart';
 
 class RoomsScreen extends StatelessWidget {
   const RoomsScreen({super.key});
@@ -51,7 +54,7 @@ class RoomsScreen extends StatelessWidget {
                 ),
                 SliverPadding(
                   padding: padding.copyWith(bottom: 16),
-                  sliver: const SliverToBoxAdapter(child: _FilterChips()),
+                  sliver: const SliverToBoxAdapter(child: RoomFilterChips()),
                 ),
                 SliverPadding(
                   padding: padding.copyWith(bottom: 24),
@@ -100,7 +103,18 @@ class _RoomsSliver extends StatelessWidget {
       );
     }
 
-    final rooms = provider.filteredRooms;
+    final favoriteIds = context.watch<FavoritesProvider>().roomIds;
+    final rooms = provider.filteredRooms(favoriteIds);
+    if (rooms.isEmpty && provider.filter == RoomsProvider.filterFavorites) {
+      return const SliverFillRemaining(
+        hasScrollBody: false,
+        child: EmptyState(
+          icon: Icons.favorite_border,
+          message: 'No favorites yet. Tap the heart on a room to save it.',
+        ),
+      );
+    }
+
     return SliverGrid.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: columns,
@@ -110,35 +124,6 @@ class _RoomsSliver extends StatelessWidget {
       ),
       itemCount: rooms.length,
       itemBuilder: (context, index) => RoomCard(room: rooms[index]),
-    );
-  }
-}
-
-class _FilterChips extends StatelessWidget {
-  const _FilterChips();
-
-  static const List<(String, String)> _filters = [
-    ('All', 'all'),
-    ('Rooms', 'room'),
-    ('Desks', 'desk'),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final current = context.select<RoomsProvider, String>((p) => p.filter);
-
-    return Wrap(
-      spacing: 8,
-      children: _filters
-          .map(
-            (filter) => ChoiceChip(
-              label: Text(filter.$1),
-              selected: current == filter.$2,
-              onSelected: (_) =>
-                  context.read<RoomsProvider>().setFilter(filter.$2),
-            ),
-          )
-          .toList(),
     );
   }
 }

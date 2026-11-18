@@ -4,28 +4,45 @@ import 'package:flutter/foundation.dart';
 
 import '../models/room.dart';
 import '../services/firestore_service.dart';
+import '../services/local_storage_service.dart';
 
 class RoomsProvider extends ChangeNotifier {
+  static const String filterAll = 'all';
+  static const String filterFavorites = 'favorites';
+  static const Set<String> _validFilters = {
+    filterAll,
+    'room',
+    'desk',
+    filterFavorites,
+  };
+
   final FirestoreService _firestore;
+  final LocalStorageService _storage;
   StreamSubscription<List<Room>>? _subscription;
 
   String? _userId;
   List<Room> _rooms = const [];
-  String _filter = 'all';
+  String _filter = filterAll;
+  bool _filterChanged = false;
   bool _isLoading = true;
   String? _errorMessage;
   bool _disposed = false;
 
-  RoomsProvider(this._firestore);
+  RoomsProvider(this._firestore, this._storage) {
+    _restoreFilter();
+  }
 
   String get filter => _filter;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   List<Room> get rooms => _rooms;
 
-  List<Room> get filteredRooms {
-    if (_filter == 'all') {
+  List<Room> filteredRooms(Set<String> favoriteIds) {
+    if (_filter == filterAll) {
       return _rooms;
+    }
+    if (_filter == filterFavorites) {
+      return _rooms.where((room) => favoriteIds.contains(room.id)).toList();
     }
     return _rooms.where((room) => room.type == _filter).toList();
   }
@@ -46,11 +63,13 @@ class RoomsProvider extends ChangeNotifier {
   }
 
   void setFilter(String value) {
-    if (_filter == value) {
+    if (_filter == value || !_validFilters.contains(value)) {
       return;
     }
     _filter = value;
+    _filterChanged = true;
     _notify();
+    _storage.saveFilter(value);
   }
 
   Room? roomById(String id) {
@@ -65,6 +84,15 @@ class RoomsProvider extends ChangeNotifier {
     _errorMessage = null;
     _notify();
     _subscribe();
+  }
+
+  Future<void> _restoreFilter() async {
+    final saved = await _storage.loadFilter();
+    if (_filterChanged || saved == null || !_validFilters.contains(saved)) {
+      return;
+    }
+    _filter = saved;
+    _notify();
   }
 
   void _subscribe() {

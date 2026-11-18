@@ -6,6 +6,7 @@ import '../config/space_info.dart';
 import '../models/booking.dart';
 import '../models/booking_result.dart';
 import '../services/firestore_service.dart';
+import '../services/local_storage_service.dart';
 import '../utils/formatters.dart';
 
 class BookingProvider extends ChangeNotifier {
@@ -14,6 +15,10 @@ class BookingProvider extends ChangeNotifier {
   static const Duration cancellationNotice = Duration(hours: 1);
 
   final FirestoreService _firestore;
+  final LocalStorageService _storage;
+
+  int _preferredDuration = 1;
+  bool _durationChanged = false;
 
   String? _currentUserId;
   String? _userName;
@@ -33,8 +38,11 @@ class BookingProvider extends ChangeNotifier {
   bool _isSubmitting = false;
   bool _disposed = false;
 
-  BookingProvider(this._firestore);
+  BookingProvider(this._firestore, this._storage) {
+    _restoreDuration();
+  }
 
+  int get preferredDuration => _preferredDuration;
   String? get currentUserId => _currentUserId;
   List<Booking> get myBookings => _myBookings;
   bool get isLoadingMyBookings => _isLoadingMyBookings;
@@ -61,6 +69,30 @@ class BookingProvider extends ChangeNotifier {
     if (userId != null) {
       _subscribeMyBookings(userId);
     }
+  }
+
+  void setPreferredDuration(int hours) {
+    if (hours < 1 || hours > maxDurationHours) {
+      return;
+    }
+    _durationChanged = true;
+    if (_preferredDuration == hours) {
+      return;
+    }
+    _preferredDuration = hours;
+    _storage.saveDuration(hours);
+  }
+
+  Future<void> _restoreDuration() async {
+    final saved = await _storage.loadDuration();
+    if (_durationChanged ||
+        saved == null ||
+        saved < 1 ||
+        saved > maxDurationHours) {
+      return;
+    }
+    _preferredDuration = saved;
+    _notify();
   }
 
   void retryMyBookings() {

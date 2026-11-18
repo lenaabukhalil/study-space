@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../models/weather_forecast.dart';
 import '../utils/formatters.dart';
 import 'summary_row.dart';
+import 'weather_summary_row.dart';
 
 class BookingSuccessDialog extends StatelessWidget {
   final String roomName;
@@ -9,6 +11,7 @@ class BookingSuccessDialog extends StatelessWidget {
   final DateTime end;
   final double total;
   final String paymentMethod;
+  final WeatherForecast? weather;
 
   const BookingSuccessDialog({
     super.key,
@@ -17,6 +20,7 @@ class BookingSuccessDialog extends StatelessWidget {
     required this.end,
     required this.total,
     required this.paymentMethod,
+    this.weather,
   });
 
   static Future<void> show(
@@ -26,6 +30,7 @@ class BookingSuccessDialog extends StatelessWidget {
     required DateTime end,
     required double total,
     required String paymentMethod,
+    WeatherForecast? weather,
   }) {
     return showDialog<void>(
       context: context,
@@ -35,12 +40,15 @@ class BookingSuccessDialog extends StatelessWidget {
         end: end,
         total: total,
         paymentMethod: paymentMethod,
+        weather: weather,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final forecast = weather;
+
     return AlertDialog(
       icon: Icon(
         Icons.check_circle,
@@ -64,6 +72,7 @@ class BookingSuccessDialog extends StatelessWidget {
               label: 'Time',
               value: Formatters.timeRange(start, end),
             ),
+            if (forecast != null) WeatherSummaryRow(forecast: forecast),
             SummaryRow(
               icon: Icons.account_balance_wallet,
               label: 'Payment',

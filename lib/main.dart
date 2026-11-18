@@ -7,9 +7,13 @@ import 'firebase_options.dart';
 import 'providers/admin_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/booking_provider.dart';
+import 'providers/favorites_provider.dart';
 import 'providers/rooms_provider.dart';
+import 'providers/weather_provider.dart';
 import 'services/auth_service.dart';
 import 'services/firestore_service.dart';
+import 'services/local_storage_service.dart';
+import 'services/weather_service.dart';
 import 'theme/app_theme.dart';
 import 'widgets/auth_gate.dart';
 
@@ -17,25 +21,37 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final firestore = FirestoreService();
+  final storage = LocalStorageService();
   runApp(
     MultiProvider(
       providers: [
         Provider.value(value: firestore),
+        Provider.value(value: storage),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(
             authService: AuthService(firestore: firestore),
             firestore: firestore,
           ),
         ),
+        ChangeNotifierProvider(
+          create: (_) => WeatherProvider(WeatherService()),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, FavoritesProvider>(
+          create: (_) => FavoritesProvider(storage),
+          update: (_, auth, favorites) =>
+              (favorites ?? FavoritesProvider(storage))
+                ..updateUser(auth.user?.uid),
+        ),
         ChangeNotifierProxyProvider<AuthProvider, RoomsProvider>(
-          create: (_) => RoomsProvider(firestore),
+          create: (_) => RoomsProvider(firestore, storage),
           update: (_, auth, rooms) =>
-              (rooms ?? RoomsProvider(firestore))..updateUser(auth.user?.uid),
+              (rooms ?? RoomsProvider(firestore, storage))
+                ..updateUser(auth.user?.uid),
         ),
         ChangeNotifierProxyProvider<AuthProvider, BookingProvider>(
-          create: (_) => BookingProvider(firestore),
+          create: (_) => BookingProvider(firestore, storage),
           update: (_, auth, bookings) =>
-              (bookings ?? BookingProvider(firestore))..updateUser(
+              (bookings ?? BookingProvider(firestore, storage))..updateUser(
                 auth.user?.uid,
                 name: auth.user?.displayName,
                 email: auth.user?.email,
